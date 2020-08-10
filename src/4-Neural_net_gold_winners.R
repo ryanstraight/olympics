@@ -7,7 +7,7 @@ library(forcats)
 library(caret)
 library(grDevices)
 library(here)
-load.project()
+#load.project()
 
 # Get rid of the NAs
 nn_prep2 <- top_five_with_medals %>%

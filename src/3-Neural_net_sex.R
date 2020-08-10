@@ -7,7 +7,9 @@ library(caret)
 library(grDevices)
 library(here)
 library(NeuralNetTools)
-load.project()
+#load.project()
+
+# To determine if sex can be predicted from region, age, height, weight, year, and gold medal winning
 
 # Get rid of the NAs
 nn_prep <- top_five_with_medals %>%
@@ -69,7 +71,7 @@ nn_sex_table <- table(nn_test$nn_prep_sex, predicted_nn_values$net.result)
 nn_sex_table
 
 # Let's take a look at it!
-plot(nn)
+#plot(nn)
      
 # Save the plot in the /graphs/ folder
 #png(file = "nn_sex_plot2.png")

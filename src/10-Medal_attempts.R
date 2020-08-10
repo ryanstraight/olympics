@@ -1,21 +1,23 @@
 # Making graph of medals by country
-library('ProjectTemplate')
-load.project()
+#library('ProjectTemplate')
+#load.project()
 library(ggplot2)
 library(here)
+library(gganimate)
 
+# Creating a chart that displays the top 50% of countries and their total attempts at medals
 
-medal_counts_by_region <- medal_counts_by_region %>%
+medal_counts_by_region_50 <- medal_counts_by_region %>%
   group_by(region) %>% 
   mutate(total_attempts = sum(n), na.rm = TRUE)
   
-medal_counts_by_region$region <- factor(medal_counts_by_region$region) %>% 
+medal_counts_by_region_50$region <- factor(medal_counts_by_region_50$region)
 
-fct_reorder(medal_counts_by_region$region, medal_counts_by_region$total_attempts, .desc = TRUE)
+fct_reorder(medal_counts_by_region_50$region, medal_counts_by_region_50$total_attempts, .desc = TRUE)
   
-top_half_medal_attempts <- medal_counts_by_region %>%
+top_half_medal_attempts <- medal_counts_by_region_50 %>%
   group_by(medal) %>%
-  filter(n >= mean(n), na.rm = TRUE) %>%
+  filter(n >= mean(n), na.rm = TRUE) %>% 
   ungroup() %>% 
   mutate(region = fct_reorder(region, total_attempts)) %>% 
   mutate(medal = fct_relevel(medal, "Gold", "Silver", "Bronze", "none")) %>% 
@@ -30,9 +32,7 @@ top_half_medal_attempts <- medal_counts_by_region %>%
 
 top_half_medal_attempts
 
-ggsave(here("graphs", "allmedalattempts.png"))
-dev.off()
+# Attempt to do a moving bar chart: https://michaeltoth.me/how-to-create-a-bar-chart-race-in-r-mapping-united-states-city-population-1790-2010.html
 
-
-
-# Mapping number of participants over time
+#ggsave(here("graphs", "allmedalattempts.png"))
+#dev.off()

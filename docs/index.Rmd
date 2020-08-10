@@ -36,7 +36,7 @@ here::here()
 athlete_events <- read_csv(here("data", "athlete_events.csv"))
 noc_regions <- read_csv(here("data", "noc_regions.csv"))
 
-# Source munging scripts
+# Source munging scripts and alyses
 sys.source(here("munge", "01-A-loading_and_tidying.R"), envir = knitr::knit_global())
 sys.source(here("munge", "02-A-Summarising.R"), envir = knitr::knit_global())
 sys.source(here("munge", "03-A-Top_ten.R"), envir = knitr::knit_global())
@@ -158,12 +158,47 @@ tibble(variable = names(olympics),
 
 # Descriptive Analysis
 
-
-
-```{r medal-attempts-total, fig.fullwidth = TRUE, fig.cap = "Medal attempts by regions in the top 50% of all medal attempt totals.", echo=FALSE}
-knitr::include_graphics(here("graphs", "allmedalattempts.png"))
+```{r source-analyses, include=FALSE, echo=FALSE}
+sys.source(here("src", "1-Decision_tree.R"), envir = knitr::knit_global())
+sys.source(here("src", "1-B-Decision_tree_in_past_25_years.R"), envir = knitr::knit_global())
 ```
 
+
+`r newthought('Due to the sheer number')` of regions that have existed and send athletes to the modern Olympic games (each of which may attempt multiple medal attempts in different events), the following depicts medal attempts by regions in the top 50% of all medal attempt totals. 
+
+```{r medal-attempts-total, fig.fullwidth = TRUE, echo=FALSE}
+sys.source(here("src", "10-Medal_attempts.R"), envir = knitr::knit_global())
+
+#knitr::include_graphics(here("graphs", "allmedalattempts.png"))
+```
+
+# Decision Tree
+
+Given the top ten medal-winning countries, a decision tree can be produced that demonstrates where gold medal winners are likely to come from, what gender they're likely to be, and what age.
+
+```{r dectree, echo=FALSE, message=FALSE, warning=FALSE}
+summary(treemodel)
+```
+
+And the plotted decision tree is as follows:
+
+```{r dectreeplot, fig.fullwidth = TRUE, echo = FALSE}
+plot(treemodel)
+
+```
+
+As we can see, if over 18, that athlete is considerably more likely to be male, which makes up the vast majority of athletes throughout the modern Olympic's history. Once athletes' age drops under 18 years old, the region they come from and then further age breakdown are the determining factors for predicting the athlete's sex.
+
+`r newthought('The gender makeup')` has changed considerably over the past half century. Let's look at that now. Examining the factors that go into medal winning while paying special attention to whether the athlete is an adult or a minor.
+
+```{r treemodelB-summary, echo = FALSE}
+summary(treemodelB)
+```
+
+```{r treemodelB-plot, fig.fullwidth = TRUE, echo = FALSE}
+#png("treemodelB.png", units="px", width=1600, height=1600, res=300)
+plot(treemodelB)
+```
 
 
 # References
