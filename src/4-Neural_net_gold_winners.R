@@ -3,6 +3,10 @@
 library(neuralnet)
 library(beepr)
 library('ProjectTemplate')
+library(forcats)
+library(caret)
+library(grDevices)
+library(here)
 load.project()
 
 # Get rid of the NAs
@@ -75,6 +79,6 @@ nn_table2
 plot(nn2)
 
 #Confusion matrix to get the stats
-confusionMatrix(nn_table2)
+nn_gold_cm <- confusionMatrix(nn_table2)
 
 

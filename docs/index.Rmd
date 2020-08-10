@@ -19,14 +19,14 @@ link-citations: yes
 ```{r setup, include=FALSE}
 library(citr)
 library(tufte)
-library(here)
 library(tidyverse)
 library(magrittr)
 library(pander)
 library(knitr)
 library(janitor)
+library(here)
 # invalidate cache when the tufte version changes
-knitr::opts_chunk$set(tidy = FALSE, cache.extra = packageVersion('tufte'))
+knitr::opts_chunk$set(tidy = FALSE, message = FALSE, warning = FALSE, cache.extra = packageVersion('tufte'))
 options(htmltools.dir.version = FALSE)
 here::here()
 ```
@@ -158,8 +158,10 @@ tibble(variable = names(olympics),
 
 # Descriptive Analysis
 
-```{r medals-by-year, echo=FALSE}
-# Write upt eh code to get the total number of medals by country per games
+
+
+```{r medal-attempts-total, fig.fullwidth = TRUE, fig.cap = "Medal attempts by regions in the top 50% of all medal attempt totals.", echo=FALSE}
+knitr::include_graphics(here("graphs", "allmedalattempts.png"))
 ```
 
 

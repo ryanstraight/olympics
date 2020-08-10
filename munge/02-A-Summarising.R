@@ -61,4 +61,13 @@ olympics <- olympics %<>%
 olympics$decade <- as_factor(olympics$decade)
 
 
-
+########
+# 
+summary_over_time <- olympics %>%
+  filter(sport != c("Art Competitions", "Other")) %>%
+  group_by(year, season) %>%
+  summarize(
+    Athletes = length(unique(id)),
+    Nations = length(unique(noc)),
+    Events = length(unique(event))
+  )

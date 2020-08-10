@@ -30,7 +30,7 @@ top_ten_with_medals$medal <- droplevels(top_ten_with_medals$medal)
 
 
 # Let's do a top 5
-top_five_regions <- as.character(top_ten$region) %>% 
+top_five_regions <- top_ten$region %>% 
   head(5L)
 
 top_five_with_medals <- top_ten %>% full_join(olympics, by = "region") %>% 
@@ -40,5 +40,8 @@ top_five_with_medals <- top_ten %>% full_join(olympics, by = "region") %>%
   ungroup()
 
 # Drop the unused factor levels
+top_five_with_medals$medal <- as_factor(top_five_with_medals$medal)
+top_five_with_medals$region <- as_factor(top_five_with_medals$region)
 top_five_with_medals$region <- droplevels(top_five_with_medals$region)
 top_five_with_medals$medal <- droplevels(top_five_with_medals$medal)
+

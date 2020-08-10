@@ -2,19 +2,27 @@
 library(neuralnet)
 library(beepr)
 library('ProjectTemplate')
+library(forcats)
+library(caret)
+library(grDevices)
+library(here)
+library(NeuralNetTools)
 load.project()
 
 # Get rid of the NAs
 nn_prep <- top_five_with_medals %>%
-  drop_na() %>% 
   select(region, sex, age, height, weight, year, medal) %>% 
-  filter(medal == "Gold")
+  filter(medal == "Gold") %>% 
+  drop_na()
+
 
 # Unfactor year
 nn_prep$year <- as.numeric(paste(nn_prep$year))
 
-# Make sex 0/1
-nn_prep_sex <- as.numeric(nn_prep$sex)-1
+
+# Convert sex to 0/1
+nn_prep$sex_fac <- as.factor(nn_prep$sex)
+nn_prep_sex <- as.numeric(nn_prep$sex_fac) -1
 
 # Normalize the data
 maxs <- apply(nn_prep[,3:6], 2, max)
@@ -57,13 +65,19 @@ head(predicted_nn_values$net.result)
 predicted_nn_values$net.result <- sapply(predicted_nn_values$net.result, round, digits = 0)
 
 # Create the table
-nn_table <- table(nn_test$nn_prep_sex, predicted_nn_values$net.result)
-nn_table
+nn_sex_table <- table(nn_test$nn_prep_sex, predicted_nn_values$net.result)
+nn_sex_table
 
 # Let's take a look at it!
 plot(nn)
+     
+# Save the plot in the /graphs/ folder
+#png(file = "nn_sex_plot2.png")
+#print(plot(nn))
+#dev.print(png, here("graphs", "nn_sex_plot.png"), width=600, height=400)
+#dev.off()
 
 #Confusion matrix to get the stats
-confusionMatrix(nn_table)
+nn_sex_cm <- confusionMatrix(nn_sex_table)
 
 
