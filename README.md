@@ -1,23 +1,18 @@
-# new-project
+# The Olympics
 
-Welcome to ProjectTemplate!
+This project uses modern Olympics data as a source for running classification and predictive modeling. It also uses the `ProjectTemplate` R package. Details on how to navigate the project are found below. The (work in progress) report is hosted through GitHub pages at https://ryanstraight.github.io/olympics/
 
-This file introduces you to ProjectTemplate, but you should eventually replace
-the contents of this file with an introduction to your project. People who
-work with your data in the future will thank you for it, including your future
-self.
 
-ProjectTemplate is an R package that helps you organize your statistical
-analysis projects. Since you're reading this file, we'll assume that you've
-already called `create.project()` to set up this project and all of its
-contents.
+## Loading the project
 
 To load your new project, you'll first need to `setwd()` into the directory
-where this README file is located. Then you need to run the following two
+where this README file is located or simply run the `olympics.Rproj` file. Then you need to run the following two
 lines of R code:
 
 	library('ProjectTemplate')
 	load.project()
+	
+Alternatively, you can navigate to the `src` folder and run `eda.R` as this accomplishes the same thing.
 
 After you enter the second line of code, you'll see a series of automated
 messages as ProjectTemplate goes about doing its work. This work involves:
@@ -26,14 +21,9 @@ messages as ProjectTemplate goes about doing its work. This work involves:
 * Reading in any datasets stored in `data` or `cache`.
 * Preprocessing your data using the files in the `munge` directory.
 
-Once that's done, you can execute any code you'd like. For every analysis
-you create, we'd recommend putting a separate file in the `src` directory.
-If the files start with the two lines mentioned above:
+Statistical tests and models are found in the same `src` folder as the `eda.R` script and can be run after the project has loaded.
 
-	library('ProjectTemplate')
-	load.project()
+The report in a Tufte-style handout can be found in the `docs` folder and is titled `index.rmd` in order for GitHub Pages to work easily.
 
-You'll have access to all of your data, already fully preprocessed, and
-all of the libraries you want to use.
 
 For more details about ProjectTemplate, see http://projecttemplate.net
