@@ -1,0 +1,69 @@
+# Using the neuralnet library
+library(neuralnet)
+library(beepr)
+library('ProjectTemplate')
+load.project()
+
+# Get rid of the NAs
+nn_prep <- top_five_with_medals %>%
+  drop_na() %>% 
+  select(region, sex, age, height, weight, year, medal) %>% 
+  filter(medal == "Gold")
+
+# Unfactor year
+nn_prep$year <- as.numeric(paste(nn_prep$year))
+
+# Make sex 0/1
+nn_prep_sex <- as.numeric(nn_prep$sex)-1
+
+# Normalize the data
+maxs <- apply(nn_prep[,3:6], 2, max)
+mins <- apply(nn_prep[,3:6], 2, min)
+
+# Get the scaled data
+scaled_data <- as_tibble(scale(nn_prep[,3:6], center = mins, scale = maxs - mins))
+
+# Get the sex back in the scaled data
+nn_ready <- cbind(nn_prep_sex, scaled_data)
+
+# Now we use nn_ready for the rest
+# Create a split
+split <- caTools::sample.split(nn_ready$nn_prep_sex, SplitRatio = 0.70)
+
+# Split based off of split Boolean Vector
+nn_train <- subset(nn_ready, split == TRUE)
+nn_test <- subset(nn_ready, split == FALSE)
+
+# Create neural network function
+feats <- names(scaled_data)
+
+# Concatenate strings
+f <- paste(feats,collapse= " + ")
+f <- paste('nn_prep_sex ~', f)
+
+# As a formula
+f <- as.formula(f)
+
+# Get the net going
+nn <- beep_on_error(neuralnet(f,nn_train,hidden = c(3, 3), linear.output = FALSE, stepmax=1e7), sound = "wilhelm"); beep(3)
+
+# Compute predictions off test set
+predicted_nn_values <- neuralnet::compute(nn, nn_test[2:5])
+
+# Results?
+head(predicted_nn_values$net.result)
+
+# Round that
+predicted_nn_values$net.result <- sapply(predicted_nn_values$net.result, round, digits = 0)
+
+# Create the table
+nn_table <- table(nn_test$nn_prep_sex, predicted_nn_values$net.result)
+nn_table
+
+# Let's take a look at it!
+plot(nn)
+
+#Confusion matrix to get the stats
+confusionMatrix(nn_table)
+
+
