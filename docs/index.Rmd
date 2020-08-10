@@ -1,16 +1,16 @@
 ---
-title: "MIS 545 Project"
-subtitle: "The Olympics"
-author: "R. Straight"
+title: "The Olympics"
+subtitle: "MIS 545 Project"
+author: "Ryan Straight"
 date: "`r Sys.Date()`"
 output:
-  tufte::tufte_book:
-    citation_package: natbib
-    latex_engine: xelatex
+  tufte::tufte_html: default
   tufte::tufte_handout:
     citation_package: natbib
     latex_engine: xelatex
-  tufte::tufte_html: default
+  tufte::tufte_book:
+    citation_package: natbib
+    latex_engine: xelatex
 bibliography: ["references.bib", "r-references.bib"]
 biblio-style: "apalike"
 link-citations: yes
@@ -131,7 +131,7 @@ olympics$sport <- olympics$sport %>%
   fct_lump_n(n = 51)
 ```
 
-With this we can now explore the data a bit easier. Note that each row in this dataset is for an _athlete_. Follows is a glimpse at the structure of the numerical data to verify data formats are as expected.
+With this we can now explore the data a bit easier. Note that each row in this dataset is for an _athlete_.
 
 
 ```{r opening-summary, echo=FALSE, message=FALSE}
@@ -139,9 +139,22 @@ library(kableExtra)
 summary_table1 <- olympics %>% select(age, height, weight, year, medal) %>% summary()
 
 summary_table1 %>% 
-  kable(format = "latex", booktabs = T, caption = "Summary table of relevant data") %>% 
-  kable_styling(latex_options = c("striped", "scaled_down"))
+  kable(format = "html", booktabs = T, caption = "Summary table of relevant data")
 ```
+
+Follows is a look at the structure of the numerical data to verify data formats are as expected.
+
+```{r glimpse, echo=FALSE, message=FALSE}
+# Let's try this one
+tibble(variable = names(olympics),
+           class = sapply(olympics, typeof),
+           first_values = sapply(olympics, function(x) paste0(head(x),  collapse = ", ")),
+           row.names = NULL) %>% 
+  kable()
+```
+
+
+
 
 # Descriptive Analysis
 
