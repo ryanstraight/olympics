@@ -200,6 +200,17 @@ summary(treemodelB)
 plot(treemodelB)
 ```
 
+# Neural Networks
+
+There are, of course, other ways of predicting attributes. One such way that has garnered renewed interest over recent years is the _neural network_, made possible here by the `neuralnet` package.
+
+By feeding the network ...
+
+```{r neural-net-gold, echo=FALSE, fig.fullwidth=TRUE}
+plot(nn2)
+```
+
+
 
 # References
 
