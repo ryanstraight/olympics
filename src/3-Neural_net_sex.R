@@ -71,7 +71,8 @@ nn_sex_table <- table(nn_test$nn_prep_sex, predicted_nn_values$net.result)
 nn_sex_table
 
 # Let's take a look at it!
-#plot(nn)
+plot(nn)
+
      
 # Save the plot in the /graphs/ folder
 #png(file = "nn_sex_plot2.png")
@@ -81,5 +82,5 @@ nn_sex_table
 
 #Confusion matrix to get the stats
 nn_sex_cm <- confusionMatrix(nn_sex_table)
-
+nn_sex_cm
 

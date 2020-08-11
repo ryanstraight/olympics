@@ -206,11 +206,17 @@ There are, of course, other ways of predicting attributes. One such way that has
 
 By feeding the network ...
 
-```{r neural-net-gold, echo=FALSE, fig.fullwidth=TRUE}
-plot(nn2)
+```{r neural-net-sex, echo=FALSE, fig.fullwidth=TRUE}
+library(neuralnet)
+knitr::include_graphics(here("graphs", "nn_sex_plot.png"))
 ```
 
+To determine a gold medal winner...
 
+```{r neural-net-gold, echo=FALSE, fig.fullwidth=TRUE}
+library(neuralnet)
+knitr::include_graphics(here("graphs", "nn2.png"))
+```
 
 # References
 

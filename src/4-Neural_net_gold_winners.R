@@ -63,7 +63,7 @@ f2 <- as.formula(f2)
 nn2 <- beep_on_error(neuralnet(f2,nn_train2,hidden = c(3, 3), linear.output = FALSE, stepmax=1e7), sound = "wilhelm"); beep(3)
 
 # Compute predictions off test set
-predicted_nn_values2 <- neuralnet::compute(nn2, nn_test2[2:5])
+predicted_nn_values2 <- neuralnet::compute(nn2, nn_test2[2:6])
 
 # Results?
 head(predicted_nn_values2$net.result)
@@ -80,5 +80,5 @@ plot(nn2)
 
 #Confusion matrix to get the stats
 nn_gold_cm <- confusionMatrix(nn_table2)
-
+nn_gold_cm
 
