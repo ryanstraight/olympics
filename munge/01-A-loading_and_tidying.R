@@ -7,11 +7,10 @@ olympics <- as_tibble(athlete_events %>% left_join(noc_regions, by = "noc"))
 
 # Switch to factors
 olympics <- olympics %>%
-  mutate(across(c("sex", "team", "noc", "games", "year", "sport", "medal", "city", "region", "season"), factor))
+  mutate(across(c("sex", "team", "noc", "games", "year", "sport", "city", "region", "season"), factor))
 
 # Replace NAs in "medal" with "None"
 olympics$medal <- olympics$medal %>% 
-  as.character() %>% 
   replace_na("none") %>% 
   as_factor()
 

@@ -169,7 +169,7 @@ sys.source(here("src", "1-B-Decision_tree_in_past_25_years.R"), envir = knitr::k
 ```{r medal-attempts-total, fig.fullwidth = TRUE, echo=FALSE}
 sys.source(here("src", "10-Medal_attempts.R"), envir = knitr::knit_global())
 
-#knitr::include_graphics(here("graphs", "allmedalattempts.png"))
+knitr::include_graphics(here("graphs", "allmedalattempts.png"))
 ```
 
 # Decision Tree
@@ -204,7 +204,7 @@ plot(treemodelB)
 
 There are, of course, other ways of predicting attributes. One such way that has garnered renewed interest over recent years is the _neural network_, made possible here by the `neuralnet` package.
 
-By feeding the network ...
+By feeding the network with age, height, weight, and year, we can determine the sex of the athlete.
 
 ```{r neural-net-sex, echo=FALSE, fig.fullwidth=TRUE}
 library(neuralnet)
