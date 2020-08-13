@@ -116,12 +116,11 @@ olympics <- as_tibble(athlete_events %>% left_join(noc_regions, by = "noc"))
 
 # Switch to factors
 olympics <- olympics %>%
-  mutate(across(c("sex", "team", "noc", "games", "year", "sport", "medal", "city",
+  mutate(across(c("sex", "team", "noc", "games", "year", "sport", "city",
     "region", "season"), factor))
 
 # Replace NAs in "medal" with "None"
 olympics$medal <- olympics$medal %>% 
-  as.character() %>% 
   replace_na("none") %>% 
   as_factor()
 
@@ -164,7 +163,7 @@ sys.source(here("src", "1-B-Decision_tree_in_past_25_years.R"), envir = knitr::k
 ```
 
 
-`r newthought('Due to the sheer number')` of regions that have existed and send athletes to the modern Olympic games (each of which may attempt multiple medal attempts in different events), the following depicts medal attempts by regions in the top 50% of all medal attempt totals. 
+Due to the sheer number of regions that have existed and send athletes to the modern Olympic games (each of which may attempt multiple medal attempts in different events), the following depicts medal attempts by regions in the top 50% of all medal attempt totals. 
 
 ```{r medal-attempts-total, fig.fullwidth = TRUE, echo=FALSE}
 sys.source(here("src", "10-Medal_attempts.R"), envir = knitr::knit_global())
