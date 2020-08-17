@@ -28,7 +28,7 @@ library(here)
 # invalidate cache when the tufte version changes
 knitr::opts_chunk$set(tidy = FALSE, message = FALSE, warning = FALSE, cache.extra = packageVersion('tufte'))
 options(htmltools.dir.version = FALSE)
-here::here()
+set.seed(74993049)
 ```
 
 ```{r source-all-data, include=FALSE}

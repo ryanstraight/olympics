@@ -1,4 +1,5 @@
 library('ProjectTemplate')
+set.seed(74993049)
 load.project()
 
 for (dataset in project.info$data)
