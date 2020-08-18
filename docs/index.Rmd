@@ -223,3 +223,7 @@ knitr::include_graphics(here("graphs", "nn2.png"))
 # create a bib file for the R packages used in this document
 knitr::write_bib(c('base', 'rmarkdown'), file = 'r-references.bib')
 ```
+
+```{r session_info, include=TRUE, echo=TRUE, results='markup'}
+devtools::session_info()
+```
