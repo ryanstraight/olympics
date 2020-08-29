@@ -25,6 +25,15 @@ library(pander)
 library(knitr)
 library(janitor)
 library(here)
+library(skimr)
+library(gridExtra)
+library(caTools)
+library(forcats)
+library(caret)
+library(grDevices)
+library(here)
+library(NeuralNetTools)
+library(neuralnet)
 # invalidate cache when the tufte version changes
 knitr::opts_chunk$set(tidy = FALSE, message = FALSE, warning = FALSE, cache.extra = packageVersion('tufte'))
 options(htmltools.dir.version = FALSE)
@@ -44,7 +53,7 @@ sys.source(here("munge", "03-A-Top_ten.R"), envir = knitr::knit_global())
 
 # Introduction
 
-The Olympics has become a financial juggernaut from the viewpoint of both the hosting country and the value of being a medalist. In 2016, the Rio Olymipcs cost $13.1 billion US dollars (7.23 billion reals) to host.^[[Rio Olympics cost \$13.1 billion](https://olympics.nbcsports.com/2017/06/14/rio-olympics-cost-13-billion/)]. This included "a subway line, a doping laboratory, a renovated port and cleanup of pouted Guanabara Bay." 
+The Olympics has become a financial juggernaut from the viewpoint of both the hosting country and the value of being a medalist. In 2016, the Rio Olymipcs cost $13.1 billion US dollars (7.23 billion reals) to host^[[Rio Olympics cost \$13.1 billion](https://olympics.nbcsports.com/2017/06/14/rio-olympics-cost-13-billion/)]. This included "a subway line, a doping laboratory, a renovated port and cleanup of pouted Guanabara Bay." 
 
 The value of _gold_ is more than the value of the medal, of course. Countries reward their medalists depending on which medal they bring home and these rewards vary drastically from country to country. Singapore, for example, rewards gold medalists with $1 million USD while Canada pays a comparatively paltry \$15,000 USD^[[Here’s how much Olympic athletes earn in 12 different countries](https://www.cnbc.com/2018/02/23/heres-how-much-olympic-athletes-earn-in-12-different-countries.html)]. Advertising sales during the Rio Olympics in 2016 totaled \$1.2 billion USD.^[[NBC says it has topped \$1 billion in national ad sales for 2020 Summer Olympics](https://www.cnbc.com/2019/12/10/nbc-says-it-topped-1b-in-national-ad-sales-for-2020-summer-olympics.html)]
 
@@ -158,12 +167,45 @@ tibble(variable = names(olympics),
 # Descriptive Analysis
 
 ```{r source-analyses, include=FALSE, echo=FALSE}
-sys.source(here("src", "1-Decision_tree.R"), envir = knitr::knit_global())
-sys.source(here("src", "1-B-Decision_tree_in_past_25_years.R"), envir = knitr::knit_global())
+sys.source(here("src", "01-Decision_tree.R"), envir = knitr::knit_global())
+sys.source(here("src", "011-Decision_tree_in_past_25_years.R"), envir = knitr::knit_global())
+```
+
+Let's begin to actually dig into the data.
+
+```{r skim, include=TRUE, echo=FALSE}
+library(magrittr)
+skimmed <- olympics %>%
+  select(-id, -notes) %>% 
+  skim()
+
+skimmed
+```
+
+We can begin to see trends, especially in the athletes' physical states. For example, see these histograms for their ages, heights, and weights. Males are identified with a light blue and females are identified with a solid red. It is obvious at first glance that there have been _many_ more males participating in the Olympics. The other differences between the sexes also becomes starkly clear. The following histograms are grouped by individuals to prevent athletes from being counted multiple times. This is particularly useful in some cases wherein individual athletes have dozens of medal attempts. It is also worth noting that these data (athletes' height and weight, especially) were not typically recorded until the mid 20th century. Weight is measured in kilograms and height in centimeters.
+
+```{r histograms, fig.fullwidth = TRUE, include=TRUE, echo=FALSE}
+library(magrittr)
+hist_age <- olympics %>% group_by(id) %>%  ggplot(aes(x = age, fill = sex)) +
+    geom_histogram(alpha=.5, position = "identity", bins = 30) +
+    scale_color_manual(values = c("red", "skyblue")) +
+    scale_fill_manual(values = c("red", "skyblue"))
+
+hist_height <- olympics %>% group_by(id) %>%  ggplot(aes(x = height, fill = sex)) +
+    geom_histogram(alpha=.5, position = "identity", bins = 30) +
+    scale_color_manual(values = c("red", "skyblue")) +
+    scale_fill_manual(values = c("red", "skyblue"))
+
+hist_weight <- olympics %>% group_by(id) %>%  ggplot(aes(x = weight, fill = sex)) +
+    geom_histogram(alpha=.5, position = "identity", bins = 30) +
+    scale_color_manual(values = c("red", "skyblue")) +
+    scale_fill_manual(values = c("red", "skyblue"))
+
+grid.arrange(hist_age, hist_height, hist_weight)
 ```
 
 
-Due to the sheer number of regions that have existed and send athletes to the modern Olympic games (each of which may attempt multiple medal attempts in different events), the following depicts medal attempts by regions in the top 50% of all medal attempt totals. 
+It's beneficial to understand attempts and successes, so here we take a closer look at just which regions are not only winning medals but even _attempting_ medals. Due to the sheer number of regions that have existed and send athletes to the modern Olympic games (each of which may attempt multiple medal attempts in different events), the following depicts medal attempts by regions in the top 50% of all medal attempt totals. 
 
 ```{r medal-attempts-total, fig.fullwidth = TRUE, echo=FALSE}
 sys.source(here("src", "10-Medal_attempts.R"), envir = knitr::knit_global())
@@ -171,7 +213,105 @@ sys.source(here("src", "10-Medal_attempts.R"), envir = knitr::knit_global())
 knitr::include_graphics(here("graphs", "allmedalattempts.png"))
 ```
 
-# Decision Tree
+## Kmeans Clustering
+
+Expository content goes here.
+
+```{r kmeans-setup, echo=FALSE}
+# Rescale data to new dataframe
+o_scale <- olympics %>% 
+  mutate(
+    age = scale(age),
+    weight = scale(weight),
+    height = scale(height),
+    sex = as.factor(sex)) %>%
+  select(age, weight, height, sex) %>% 
+  drop_na()
+
+# Let's check the data
+summary(o_scale)
+
+# Create one with just the weight and height for later
+o_scale_small <- o_scale %>% 
+  select(weight, height)
+
+# Run k means function
+cluster1 <- kmeans(o_scale[2:3], 3, nstart = 25)
+#summary(cluster1)
+
+# Animate the process (cached)
+#saveGIF({  kmeans.ani(o_scale[2:3], 2)}, movie.name = "cluster1.gif", interval = 1, nmax = 50, ani.width = 600)
+
+# create a function that returns withinss value of a k-means() result
+kmeans.totwithinss.k <- function(dataset, number_of_centers){
+  km <- kmeans(dataset, number_of_centers)
+  km$tot.withinss
+}
+
+kmeans.distortion <- function(dataset, maxk){
+  vec <- as.vector(1:maxk)
+  vec[1:maxk] <- sapply(1:maxk, kmeans.totwithinss.k, dataset = dataset)
+  return (vec)
+}
+
+maxk <- 6
+dis_vct <- kmeans.distortion(o_scale_small, maxk)
+```
+
+Based on the elbrow graph below we can see the optimum number of clusters is actually 3.
+
+```{r elbow, echo=FALSE}
+# Create elbow curve graph to identify the probable number of appropriate clusters
+plot(1:maxk,
+     dis_vct,
+     type = 'b',
+     col = 'blue',
+     xlab = "Number of clusters",
+     ylab = "Distortion")
+```
+
+Now let's look at the clustered data.
+
+```{r glimpse_cluster_data, echo=FALSE}
+glimpse(cluster1)
+
+#cluster1
+
+#fviz_cluster(cluster1, data = o_scale)
+```
+
+
+```{r scatterplot-for-kmeans-setup, echo=FALSE}
+# Create a ggplot that scatters height and weight with sex fill
+scale_sex <- o_scale %>% ggplot(aes(x = weight, y = height, col=as.factor(sex))) +
+                geom_point() +
+                labs(color = "Sex\n") +
+                scale_color_manual(values = c("red", "skyblue"))
+ggsave(here("graphs", "scale_sex.png"))
+
+cluster1graph <- here("graphs", "cluster_1.gif")
+sex_scatter <- here("graphs", "scale_sex.png")
+```
+
+By comparing the clustering animation with a scatterplot of `sex`, we can see there is a good deal of overlap between the clusters. (Note that while there appear to be _considerable_ numbers of outliers, this does not actually imply errors as the ranges are legitimately that wide. There was a 10-year-old boy participating in the Olympics in 1896 and he even won bronze^[[Greece's Dimitrios Loundras is the youngest known Olympic medallist.](https://www.insidethegames.biz/articles/1017305/greece-s-dimitrios-loundras-is-the-youngest-known-olympic-medallist)]) So, while there are actually only two sexes reported in the data but three clusters identified, this tells us that height and weight of athletes is not necessarily a good match for sex, at least not without breaking the data down more between regions, decades, or events.
+
+```{r scatterplot-for-kmeans-display, fig.margin = TRUE, echo=FALSE, fig.cap = "Scatterplot of weight and height for comparison to kmeans clustering."}
+#Put them next to one another
+knitr::include_graphics(sex_scatter)
+```
+
+```{r animation-for-kmeans-display, echo=FALSE}
+#Put them next to one another
+knitr::include_graphics(cluster1graph)
+```
+
+Of course, the efficiency and actual usefulness of the _k-means_ clustering method presumes there is the relationship between the data. It also requires early exploration of the structure of the data, for example looking at the elbow plot above, to determine what is likely the optimal number of clusters. To avoid randomness being introduced, best practices are to use the R function `set.seed()` to ensure the same results each time.
+
+# Prediction
+
+Given the size and nature of the data, as introduced at the beginning of this report, it is possible to predict which demographic or biological attributes predict medal winnings in athletes.
+
+## Decision Trees
 
 Given the top ten medal-winning countries, a decision tree can be produced that demonstrates where gold medal winners are likely to come from, what gender they're likely to be, and what age.
 
@@ -183,7 +323,6 @@ And the plotted decision tree is as follows:
 
 ```{r dectreeplot, fig.fullwidth = TRUE, echo = FALSE}
 plot(treemodel)
-
 ```
 
 As we can see, if over 18, that athlete is considerably more likely to be male, which makes up the vast majority of athletes throughout the modern Olympic's history. Once athletes' age drops under 18 years old, the region they come from and then further age breakdown are the determining factors for predicting the athlete's sex.
@@ -199,23 +338,118 @@ summary(treemodelB)
 plot(treemodelB)
 ```
 
+Clearly, being from the United States is the biggest factor in gold-medal winning. After this, being an adult of either sex from Canada, Germany, Hungary, Italy, Russia, or the UK is your next best bet. Following this, being an adult female from Canada, Germany, Hungary, Itality, or Russia is your best bet. Interestingly, being under 18 years old only seems to predict one thing in this model: you're likely to win a silver medal.
+
 # Neural Networks
+
+```{r source-nets, echo=FALSE}
+#sys.source(here("src", "3-Neural_net_sex.R"), envir = knitr::knit_global())
+#sys.source(here("src", "4-Neural_net_gold_winners.R"), envir = knitr::knit_global())
+```
 
 There are, of course, other ways of predicting attributes. One such way that has garnered renewed interest over recent years is the _neural network_, made possible here by the `neuralnet` package.
 
-By feeding the network with age, height, weight, and year, we can determine the sex of the athlete.
+## Determining sex
 
-```{r neural-net-sex, echo=FALSE, fig.fullwidth=TRUE}
-library(neuralnet)
-knitr::include_graphics(here("graphs", "nn_sex_plot.png"))
+By feeding the network with age, height, weight, and year (during which the athlete participated), we can determine the sex of the athlete. As shown by the figure below and the confusion matrix in the margins, this method of prediction is 85% accurate.
+
+```{r sex-cm, echo=FALSE}
+# To determine if sex can be predicted from region, age, height, weight, year, and gold medal winning
+
+# Load the RData file instead of running the net
+load(here("data", "nn.RData"))
+load(here("data", "nn_sex_cm.Rdata"))
+load(here("data", "nn_test.Rdata"))
+
+# Compute predictions off test set
+predicted_nn_values <- neuralnet::compute(nn, nn_test[2:5])
+
+# Results?
+#head(predicted_nn_values$net.result)
+
+# Round that
+predicted_nn_values$net.result <- sapply(predicted_nn_values$net.result, round, digits = 0)
+
+# Create the table
+nn_sex_table <- table(nn_test$nn_prep_sex, predicted_nn_values$net.result)
+#nn_sex_table
+
+# Let's take a look at it!
+#plot(nn)
+
+    
+# Save the plot in the /graphs/ folder
+#png(file = "nn_sex_plot2.png")
+#print(plot(nn))
+#dev.print(png, here("graphs", "nn_sex_plot.png"), width=600, height=400)
+#dev.off()
+
+#Confusion matrix to get the stats
+nn_sex_cm
 ```
 
-To determine a gold medal winner...
+::: {.fullwidth}
+```{r neural-net-sex-plot, echo=FALSE}
+knitr::include_graphics(here("graphs", "nn1.png"))
+```
+:::
 
-```{r neural-net-gold, echo=FALSE, fig.fullwidth=TRUE}
-library(neuralnet)
+Clearly, with this model, we're fairly confident in our ability to predict an athlete's sex given their region, age, height, weight, year, and gold medal winning. There are clearly some pitfalls with this method, especially given that not all events equally allow the sexes and womens' long-time exclusion from the games. This suggests more research would be beneficial in looking at particular regions and trends over the past few decades. Time series would be very beneficial but are outside the scope of this report.
+
+## Determining medal
+
+To determine a gold medal winner we can use various other demographics and qualities of the atheletes, like sex, age, height, weight, and the year they participated. This method is only 59% accurate, suggesting we need more information and possibly a different method of determining just what is important when considering gold medal earnings in the modern olympics.
+
+```{r gold-medal-cm, echo=FALSE}
+load(here("data", "nn2.RData"))
+load(here("data", "nn_gold_cm.Rdata"))
+load(here("data", "nn_test2.Rdata"))
+
+# Compute predictions off test set
+predicted_nn_values2 <- neuralnet::compute(nn2, nn_test2[2:6])
+
+# Results?
+#head(predicted_nn_values2$net.result)
+
+# Round that
+predicted_nn_values2$net.result <- sapply(predicted_nn_values2$net.result, round, digits = 0)
+
+# Create the table
+nn_table2 <- table(nn_test2$gold_winner, predicted_nn_values2$net.result)
+#nn_table2
+
+# Let's take a look at it!
+#plot(nn2)
+
+# Save the plot in the /graphs/ folder
+#png(file = "nn_sex_plot2.png")
+#print(plot(nn2))
+#dev.print(png, here("graphs", "nn2.png"), width=600, height=400)
+#dev.off()
+
+#Confusion matrix to get the stats
+nn_gold_cm <- confusionMatrix(nn_table2)
+nn_gold_cm
+```
+
+
+::: {.fullwidth}
+```{r neural-net-medals-plot, echo=FALSE, eval=TRUE}
 knitr::include_graphics(here("graphs", "nn2.png"))
 ```
+:::
+
+One pitfall with this particular model is the fact that so many more athletes have attempted medaling and failed than have actually won medals (this is not surprising, of course). Given our research questions and business purpose for this report, we suggest, as the previous model, breaking down the data into time series and based on regions, perhaps even events. Again, this is beyond the scope of this report. 
+
+# Conclusion
+
+The modern Olympics are a fascinating--if somewhat problematic--phenomenon that produces some truly interesting data upon which we can draw conslusion and make predictions. Given our business purposes and research questions (trends in nations' medal totals, demographics contribute to medaling, and predicting a medal based on an athlete's demographics), this data is mostly sufficient in providing that necessary for the chosen models (k-means clustering, decision trees, and neural networks). 
+
+Trends in nations' medal winnings are fairly clear: those nations that send more athletes tend to win more models. This isn't precisely surprising but it does draw attention to the fact that medals, especially gold medals, do not simply appear out of nowhere; they are worked for against tremendous competition. If we are interested in dealing with gold medal winners, we should clearly be inclined to work with a definite list of countries, as demonstrated in the descriptive statistics above.
+
+Interestingly, sex being a characteristic that has only been a variable in the modern Olympic games since the mid 20th century, is still somewhat easy to predict based on a variety of considerations, medal-winning being one of them. Still more interesting is the clustering of sex given athletes' height and weight. While we may expect males to be on the higher end of the spectrum for both, there is a considerable amount of overlap. Even more interesting than this is the sheer amount _without_ overlap. It would be beneficial from our business standpoint to focus on areas where gold medal winners may come from to further examine clusters within those non-overlapping areas and determine the events and regions those athletes come from. It is entirely possible that, with further and deeper analysis, we can predict that the next gold medal winner in gymnastics will be a 17 year old female from Poland, for example.
+
+Which leads us to the fascinating neural networks' prediction abilities. It seems it's much easier to predict the sex of an athlete (consider this along side the previous decision trees) than it is to predict whether they will win a medal. This is, it would appear given the confusion matrices above, due to the sheer number of non-gold-medal-winning attempts compared to the relatively small number of gold medals. Again, further and deeper analyses may be able to mitigate this and provide an even clearer predictive model regarding just who will win a gold next time, where they come from, and how old they will be.
 
 # References
 
